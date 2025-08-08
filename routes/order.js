@@ -1,47 +1,45 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const axios = require("axios");
-const crypto = require("crypto");
+const axios = require('axios');
 
-router.post("/create", async (req, res) => {
-  const { orderId, sender, receiver, cargo, weight } = req.body;
-
-  const payload = {
-    head: {
-      transType: 200,
-      transMessageId: Date.now().toString(),
-      customerCode: process.env.SF_CUSTOMER_CODE,
-    },
-    body: {
-      orderId,
-      expressType: "1",
-      sender,
-      receiver,
-      parcelQty: 1,
-      payMethod: 1,
-      cargoDetails: cargo,
-      totalWeight: weight,
-    },
-  };
-
-  const bodyStr = JSON.stringify(payload.body);
-  const verifyCode = crypto
-    .createHash("md5")
-    .update(bodyStr + process.env.SF_SANDBOX_KEY, "utf8")
-    .digest("base64");
-
-  const finalPayload = {
-    ...payload,
-    verifyCode,
-  };
+router.post('/order', async (req, res) => {
+  const {
+    orderId,
+    sender,
+    receiver,
+    cargo,
+    payMethod
+  } = req.body;
 
   try {
-    const response = await axios.post(process.env.SF_API_URL, finalPayload, {
-      headers: { "Content-Type": "application/json" },
+    // 1. 构造顺丰 API 请求体
+    const requestData = {
+      orderId,
+      expressType: 1,
+      sender,    // 发件人信息对象
+      receiver,  // 收件人信息对象
+      cargoDetails: [cargo],
+      payMethod
+    };
+
+    // 2. 生成签名（加密）并发送请求
+    const { SF_CLIENT_CODE, SF_CHECKWORD } = process.env;
+
+    const response = await axios.post('https://sfapi-sandbox.sf-express.com/std/service', {
+      head: SF_CLIENT_CODE,
+      serviceCode: 'COM_RECE_JUOP_CREATE_ORDER',
+      body: requestData
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        // 如果需要加密，可以在此处加入加密逻辑或签名字段
+      }
     });
+
     res.json(response.data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error('下单失败:', error.response?.data || error.message);
+    res.status(500).json({ error: '顺丰下单失败' });
   }
 });
 
