@@ -1,16 +1,11 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const orderRoutes = require("./routes/order");
-
-dotenv.config();
+const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const orderRoutes = require('./routes/order');
 
 app.use(express.json());
-app.use("/api/order", orderRoutes);
+app.use('/api', orderRoutes);
 
-app.get("/", (req, res) => res.send("Knight Logistics API Running"));
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
