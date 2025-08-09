@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
-// 加载环境变量
+// 读取 .env 环境变量
 dotenv.config();
 
 const app = express();
@@ -18,12 +18,11 @@ app.get("/", (req, res) => {
   res.send("Knight Logistics API Running");
 });
 
-// 业务路由：/api/order
+// 引入订单路由
 const orderRoutes = require("./routes/order");
-// POST https://<your-render>.onrender.com/api/order
 app.use("/api/order", orderRoutes);
 
-// 启动服务（Render 必须绑定 process.env.PORT）
+// 启动服务
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
