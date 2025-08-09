@@ -1,21 +1,29 @@
 // index.js
 const express = require("express");
-const bodyParser = require("body-parser");
-const orderRoutes = require("./routes/order");
+const cors = require("cors");
+const dotenv = require("dotenv");
+
+// 加载环境变量
+dotenv.config();
 
 const app = express();
-app.use(bodyParser.json());
+const PORT = process.env.PORT || 3000;
+
+// 中间件
+app.use(cors());
+app.use(express.json());
 
 // 根路径健康检查
 app.get("/", (req, res) => {
   res.send("Knight Logistics API Running");
 });
 
-// API 路由
-app.use("/api", orderRoutes);
+// 业务路由：/api/order
+const orderRoutes = require("./routes/order");
+// POST https://<your-render>.onrender.com/api/order
+app.use("/api/order", orderRoutes);
 
-// 读取 PORT 环境变量（Render 会自动注入）
-const PORT = process.env.PORT || 3000;
+// 启动服务（Render 必须绑定 process.env.PORT）
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
